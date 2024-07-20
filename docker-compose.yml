@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  pinturillo-api:
+    build:
+      context: ./pinturillo-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./pinturillo-api/src:/home/app/src
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./pinturillo-api/.env
+    depends_on:
+      - redis
+    networks:
+      - pinturillo-vue-network
+
+  pinturillo-vue:
+    build:
+      context: ./pinturillo-vue
+      dockerfile: Dockerfile
+    volumes:
+      - ./pinturillo-vue/src:/home/app/src
+      - /home/app/src/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./pinturillo-vue/.env
+    depends_on:
+      - redis
+      - pinturillo-api
+    networks:
+      - pinturillo-vue-network
+
+  redis:
+    image: redis:7
+    restart: always
+    volumes:
+      - ./volumes/redis:/var/lib/redis
+    networks:
+      - pinturillo-vue-network
+
+networks:
+  pinturillo-vue-network:

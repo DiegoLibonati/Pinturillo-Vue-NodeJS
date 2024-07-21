@@ -39,7 +39,7 @@ This repository is an application made with vue and socket io. It is a game wher
 
 ## Video
 
-Coming Soon...
+https://github.com/user-attachments/assets/85799435-bcea-4f6f-9a45-2db9fb6ea56b
 
 ## Documentation APP
 

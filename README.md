@@ -1,4 +1,4 @@
-# Pinturillo-Vue
+# Pinturillo Vue NodeJS
 
 ## Getting Started
 
@@ -35,7 +35,7 @@ This repository is an application made with vue and socket io. It is a game wher
 
 ## Portfolio Link
 
-[`https://www.diegolibonati.com.ar/#/project/109`](https://www.diegolibonati.com.ar/#/project/110)
+[`https://www.diegolibonati.com.ar/#/project/Pinturillo-Vue-NodeJS`](https://www.diegolibonati.com.ar/#/project/Pinturillo-Vue-NodeJS)
 
 ## Video
 

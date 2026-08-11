@@ -1,3 +1,6 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import type { Envs } from "@/types/env";
 
 describe("env.config", () => {
@@ -6,11 +9,13 @@ describe("env.config", () => {
   beforeEach((): void => {
     originalEnv = process.env;
     process.env = { ...originalEnv };
+    jest.spyOn(process, "cwd").mockReturnValue(join(tmpdir(), "drawlingo-api-missing-env-dir"));
     jest.resetModules();
   });
 
   afterEach((): void => {
     process.env = originalEnv;
+    jest.restoreAllMocks();
   });
 
   it("should export envs with correct values when all vars are set", () => {

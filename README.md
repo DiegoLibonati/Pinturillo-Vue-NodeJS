@@ -96,6 +96,7 @@ Database (ephemeral):
 #### Dependencies
 
 ```
+"dotenv": "^17.4.2"
 "express": "^4.21.0"
 "express-rate-limit": "^8.5.2"
 "helmet": "^8.1.0"
@@ -167,7 +168,21 @@ docker-compose -f dev.docker-compose.yml build --no-cache
 docker-compose -f dev.docker-compose.yml up --force-recreate
 ```
 
-> **Note:** You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed if you are on Windows, and you must run the `docker-compose` commands from the repository root (where `dev.docker-compose.yml` lives).
+> **Note:** You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed if you are on Windows, and you must run the `docker-compose` commands from the repository root (where `dev.docker-compose.yml` lives). The compose files use the long `env_file` syntax (`required: false`), which needs Docker Compose >= 2.24 — with it, compose no longer fails if a `.env` file is missing.
+
+### Running the API without Docker
+
+The API can also run directly on your machine:
+
+```bash
+cd drawlingo-api
+npm install
+npm run dev
+```
+
+At startup the API loads `.env` files in cascade (see [Env file cascade](#env-file-cascade-drawlingo-api)), so make sure the hosts point at your local services — e.g. `REDIS_HOST=localhost` instead of the compose hostname `redis`. You can keep the Docker-oriented `.env` untouched and create a git-ignored `.env.local` with your local overrides.
+
+After the server starts listening, it verifies the connection to Redis with a cheap `PING` using bounded retries and exponential backoff (5 attempts, 500ms base delay doubling up to 8000ms). If Redis is unreachable it only logs warnings — the server keeps running and the Redis client reconnects automatically once the service is back.
 
 ### Pre-Commit for Development
 
@@ -181,6 +196,20 @@ What the hook does on every commit:
 ## Env Keys
 
 Both modules rely on environment variables loaded from `.env` files. Use the `.env.example` in each module as a starting point.
+
+### Env file cascade (`drawlingo-api`)
+
+The API loads environment files through `src/configs/dotenv.config.ts` before validating them with Zod. Precedence, from highest to lowest:
+
+1. Real process environment (Docker `env_file`, CI, shell exports) — never overridden
+2. `.env.<mode>.local`
+3. `.env.local`
+4. `.env.<mode>`
+5. `.env`
+
+`<mode>` comes from `NODE_ENV`: the process value first, then the value declared inside `.env.local`, then inside `.env`, defaulting to `development`. In `test` mode only `.env.test.local` and `.env.test` are read, so a local development `.env` can never change test results.
+
+The list of files that were actually applied is exported as `loadedEnvFiles` from `src/configs/env.config.ts` and logged as `envFiles` in the server startup line. All `.env.*` variants except `.env.example` are git-ignored.
 
 ### Frontend (`drawlingo-app/.env`)
 

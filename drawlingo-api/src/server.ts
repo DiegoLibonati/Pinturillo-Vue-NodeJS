@@ -1,10 +1,12 @@
 import redisClient from "@/configs/redis.config";
-import { envs } from "@/configs/env.config";
+import { envs, loadedEnvFiles } from "@/configs/env.config";
 import { logger } from "@/configs/logger.config";
 
 import { initSockets } from "@/sockets";
 
 import { RedisService } from "@/services/redis.service";
+
+import { verifyRedisConnection } from "@/helpers/verify_redis_connection.helper";
 
 import { INITIAL_LOBBY, INITIAL_ROOMS, INITIAL_USERS } from "@/constants/vars.constant";
 
@@ -19,7 +21,11 @@ let io: ReturnType<typeof initSockets>;
 
 const onInit = (): void => {
   const baseUrl = ENV === "development" ? `http://localhost:${PORT}` : BASE_URL;
-  logger.info({ env: ENV, baseUrl }, `Server running in ${ENV} mode on ${baseUrl}`);
+  logger.info(
+    { env: ENV, baseUrl, envFiles: loadedEnvFiles },
+    `Server running in ${ENV} mode on ${baseUrl}`
+  );
+  void verifyRedisConnection();
 };
 
 const shutdown = async (): Promise<void> => {

@@ -6,7 +6,8 @@ services:
     container_name: drawlingo-api
     restart: always
     env_file:
-      - ./drawlingo-api/.env
+      - path: ./drawlingo-api/.env
+        required: false
     expose:
       - 5050:5050
     depends_on:
@@ -21,7 +22,8 @@ services:
     container_name: drawlingo-app
     restart: always
     env_file:
-      - ./drawlingo-app/.env
+      - path: ./drawlingo-app/.env
+        required: false
     ports:
       - 3000:8080
     depends_on:

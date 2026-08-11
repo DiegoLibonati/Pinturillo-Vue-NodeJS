@@ -10,7 +10,8 @@ services:
     ports:
       - "5050:5050"
     env_file:
-      - ./drawlingo-api/.env
+      - path: ./drawlingo-api/.env
+        required: false
     depends_on:
       - redis
     networks:
@@ -27,7 +28,8 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./drawlingo-app/.env
+      - path: ./drawlingo-app/.env
+        required: false
     depends_on:
       - redis
       - drawlingo-api

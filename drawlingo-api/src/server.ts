@@ -38,11 +38,19 @@ const shutdown = async (): Promise<void> => {
   }, SHUTDOWN_TIMEOUT_MS).unref();
 };
 
-const start = async (): Promise<void> => {
-  await redisClient.connect();
-  await RedisService.setUsers(INITIAL_USERS);
-  await RedisService.setRooms(INITIAL_ROOMS);
-  await RedisService.setLobby(INITIAL_LOBBY);
+const connectRedis = async (): Promise<void> => {
+  try {
+    await redisClient.connect();
+    await RedisService.setUsers(INITIAL_USERS);
+    await RedisService.setRooms(INITIAL_ROOMS);
+    await RedisService.setLobby(INITIAL_LOBBY);
+  } catch (err) {
+    logger.error({ err }, "Failed to connect to Redis or seed initial data.");
+  }
+};
+
+const start = (): void => {
+  void connectRedis();
   server = app.listen(PORT, onInit);
   io = initSockets(server);
 };
@@ -50,4 +58,4 @@ const start = async (): Promise<void> => {
 process.on("SIGTERM", () => void shutdown());
 process.on("SIGINT", () => void shutdown());
 
-void start();
+start();

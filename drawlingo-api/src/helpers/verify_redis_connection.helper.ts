@@ -6,6 +6,29 @@ import { logger } from "@/configs/logger.config";
 const DEFAULT_RETRIES = 5;
 const DEFAULT_BASE_DELAY_MS = 500;
 const DEFAULT_MAX_DELAY_MS = 8000;
+const DEFAULT_PING_TIMEOUT_MS = 1000;
+
+const pingWithTimeout = (timeoutMs: number): Promise<unknown> => {
+  const ping = redisClient.ping();
+  ping.catch(() => undefined);
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Redis ping timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    ping.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err: unknown) => {
+        clearTimeout(timer);
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    );
+  });
+};
 
 export const verifyRedisConnection = async (
   options: VerifyConnectionOptions = {}
@@ -14,11 +37,12 @@ export const verifyRedisConnection = async (
     retries = DEFAULT_RETRIES,
     baseDelayMs = DEFAULT_BASE_DELAY_MS,
     maxDelayMs = DEFAULT_MAX_DELAY_MS,
+    pingTimeoutMs = DEFAULT_PING_TIMEOUT_MS,
   } = options;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      await redisClient.ping();
+      await pingWithTimeout(pingTimeoutMs);
       logger.info({ attempt }, "Redis connection verified.");
       return true;
     } catch {

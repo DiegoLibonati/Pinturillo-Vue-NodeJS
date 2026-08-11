@@ -8,4 +8,5 @@ export interface VerifyConnectionOptions {
   retries?: number;
   baseDelayMs?: number;
   maxDelayMs?: number;
+  pingTimeoutMs?: number;
 }

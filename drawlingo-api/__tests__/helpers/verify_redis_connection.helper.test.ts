@@ -107,6 +107,36 @@ describe("verify_redis_connection.helper", () => {
       );
     });
 
+    it("should treat a ping that never settles as a failed attempt", async () => {
+      mockPing.mockReturnValue(new Promise(() => undefined));
+
+      const result: boolean = await verifyRedisConnection({
+        retries: 2,
+        baseDelayMs: 1,
+        pingTimeoutMs: 5,
+      });
+
+      expect(result).toBe(false);
+      expect(mockPing).toHaveBeenCalledTimes(2);
+      expect(mockLoggerWarn).toHaveBeenLastCalledWith(
+        { retries: 2 },
+        expect.stringContaining("Redis is unreachable after all retries")
+      );
+    });
+
+    it("should recover when the ping succeeds after a timed out attempt", async () => {
+      mockPing.mockReturnValueOnce(new Promise(() => undefined)).mockResolvedValueOnce("PONG");
+
+      const result: boolean = await verifyRedisConnection({
+        retries: 3,
+        baseDelayMs: 1,
+        pingTimeoutMs: 5,
+      });
+
+      expect(result).toBe(true);
+      expect(mockLoggerInfo).toHaveBeenCalledWith({ attempt: 2 }, "Redis connection verified.");
+    });
+
     it("should not log info when the ping never succeeds", async () => {
       mockPing.mockRejectedValue(new Error("down"));
 
